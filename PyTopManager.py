@@ -22,15 +22,21 @@ class PyTopManager:
         pyperclip.copy(self.clipboard_list[self.current_clipboard])
 
     def check_key(self):
-        if keyboard.is_pressed('SHIFT') and keyboard.is_pressed('a') and keyboard.is_pressed("CTRL"):
-            self.clipboard_list[self.current_clipboard] = pyperclip.paste()
+        if keyboard.is_pressed('SHIFT') and keyboard.is_pressed("CTRL"):
             screen_width = ctypes.windll.user32.GetSystemMetrics(0)
             screen_height = ctypes.windll.user32.GetSystemMetrics(1)
 
             width = 300
             height = 400
 
-            WebsiteWindow(self, 
+            if keyboard.is_pressed('a'):
+                self.clipboard_list[self.current_clipboard] = pyperclip.paste()
+
+                ClipboardWindow(self, 
+                                (screen_width//2 - width//2, screen_height//2 - height//2), 
+                                (width, height))
+            elif keyboard.is_pressed('s'):
+                WebsiteWindow(self, 
                             (screen_width//2 - width//2, screen_height//2 - height//2), 
                             (width, height))
         

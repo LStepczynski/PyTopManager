@@ -79,7 +79,6 @@ class ClipboardWindow:
             self.change_clipboard(index)
                 
 
-
     def change_clipboard(self, index):
         self.pyTopManager.change_clipboard(index)
         self.root.destroy()
@@ -133,11 +132,13 @@ class WebsiteWindow:
         self.root.focus_force()
         self.root.mainloop()
 
+
     def open_webpage(self, url, index):
-        if url == "Add Website":
+        if url == "Add Website" or "":
             self.add_webpage(index)
         else:
             webbrowser.open(url)
+            self.root.destroy()
 
 
     def add_webpage(self, index):
@@ -166,13 +167,12 @@ class WebsiteWindow:
         self.root.destroy()
 
 
-
     def on_key_press(self, event):
         key = event.keysym
         for index in range(10):
             if key != str(index):
                 continue
-            self.open_webpage(index)
+            self.open_webpage(self.pyTopManager.webpage_list[index], index)
         
 
     def change_clipboard(self, index):
