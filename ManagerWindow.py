@@ -40,7 +40,7 @@ class ManagerWindow:
 
 
 
-class TopManagerPopUp:
+class ClipboardWindow:
     def __init__(self, pyTopManager, position, size):
         self.pyTopManager = pyTopManager
         self.position = position
@@ -84,3 +84,97 @@ class TopManagerPopUp:
         self.pyTopManager.change_clipboard(index)
         self.root.destroy()
 
+
+class WebsiteWindow:
+    def __init__(self, pyTopManager, position, size):
+        self.pyTopManager = pyTopManager
+        self.position = position
+
+        self.root = tk.Tk()
+        self.root.title("Websites")
+        self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
+        self.root.attributes("-topmost", True)
+        self.root.attributes("-toolwindow", True)
+
+        self.root.bind("<KeyPress>", self.on_key_press)
+
+        for index, element in enumerate(self.pyTopManager.webpage_list):
+            if element == "":
+                label = "Add Website"
+            elif len(element) >= 20:
+                label = element[:20] + "..."
+            else: 
+                label = element
+
+            frame = tk.Frame(self.root, bg='black')
+            
+            # Create a button with label text and a unique command based on the index 'i'
+            tk.Button(
+                frame, 
+                text=label, 
+                height=1,
+                width=24,
+                font=('', 15), 
+                command=lambda url=label, i=index: self.open_webpage(url, i)
+            ).grid(row=index, column=0) 
+            
+            # Create a delete button (assuming this is what it is for) with a unique command
+            tk.Button(
+                frame, 
+                text="X", 
+                height=1,
+                font=('', 15), 
+                command=lambda i=index: self.submit_webpage(i, "")
+            ).grid(row=index, column=1) 
+            
+            frame.pack(fill='x')
+
+    
+        self.root.focus_force()
+        self.root.mainloop()
+
+    def open_webpage(self, url, index):
+        if url == "Add Website":
+            self.add_webpage(index)
+        else:
+            webbrowser.open(url)
+
+
+    def add_webpage(self, index):
+        self.topwindow = tk.Toplevel(self.root)
+        self.topwindow.title("Add Webpage")
+        self.topwindow.geometry("350x150")
+        self.topwindow.attributes("-topmost", True)
+        self.topwindow.attributes("-toolwindow", True)
+
+        self.topwindow_label = tk.Label(self.topwindow, text="Enter an Url", font=('',20))
+        self.topwindow_label.pack()
+        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_input.pack(pady=20)
+        self.topwindow_submit = tk.Button(self.topwindow, 
+                                          text="Submit", 
+                                          font=('', 15), 
+                                          command=lambda: self.submit_webpage(index, self.topwindow_input.get()))
+        self.topwindow_submit.pack()
+
+
+    def submit_webpage(self, index, url):
+        self.pyTopManager.webpage_list[index] = url
+        with open(self.pyTopManager.webpage_list_file, 'w') as file:
+            for line in self.pyTopManager.webpage_list:
+                file.write(line + "\n")
+        self.root.destroy()
+
+
+
+    def on_key_press(self, event):
+        key = event.keysym
+        for index in range(10):
+            if key != str(index):
+                continue
+            self.open_webpage(index)
+        
+
+    def change_clipboard(self, index):
+        self.pyTopManager.change_clipboard(index)
+        self.root.destroy()
