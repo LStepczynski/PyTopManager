@@ -1,4 +1,4 @@
-from ManagerWindow import TopManagerPopUp
+from ManagerWindow import ClipboardWindow, WebsiteWindow
 import pyperclip
 import keyboard
 import ctypes
@@ -10,6 +10,11 @@ class PyTopManager:
         self.is_working = is_working
         self.clipboard_list = ['' for _ in range(10)] # Contents of the clipboards
         self.current_clipboard = 0                    # Current Clipboard index
+
+        self.webpage_list_file = "webpages.txt"
+        self.webpage_list = self.load_webpages(self.webpage_list_file)
+        print(self.webpage_list)
+        
     
     def change_clipboard(self, clipboard_index):
         self.clipboard_list[self.current_clipboard] = pyperclip.paste()
@@ -25,9 +30,26 @@ class PyTopManager:
             width = 300
             height = 400
 
-            TopManagerPopUp(self, 
+            WebsiteWindow(self, 
                             (screen_width//2 - width//2, screen_height//2 - height//2), 
                             (width, height))
+        
+    def load_webpages(self, file_name):
+        url_list = []
+        
+        try:
+            with open(file_name, 'r') as file:
+                for line in file:
+                    url_list.append(line.strip())
+        except FileNotFoundError:
+            return ["" for _ in range(10)]
+
+        # Fill the list with empty strings up to a maximum of 10 elements
+        while len(url_list) < 10:
+            url_list.append("")
+
+        return url_list
+
 
     def activate(self):
         """Do something while is_working"""
