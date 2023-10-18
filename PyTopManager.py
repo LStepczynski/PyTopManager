@@ -1,4 +1,4 @@
-from ManagerWindow import ClipboardWindow, WebsiteWindow
+from PyTopWindow import ClipboardWindow, WebsiteWindow, CommandWindow
 import pyperclip
 import keyboard
 import ctypes
@@ -12,8 +12,10 @@ class PyTopManager:
         self.current_clipboard = 0                    # Current Clipboard index
 
         self.webpage_list_file = "webpages.txt"
-        self.webpage_list = self.load_webpages(self.webpage_list_file)
-        print(self.webpage_list)
+        self.webpage_list = self.load_file(self.webpage_list_file)
+        
+        self.command_list_file = "commands.txt"
+        self.command_list = self.load_file(self.command_list_file)
         
     
     def change_clipboard(self, clipboard_index):
@@ -39,8 +41,12 @@ class PyTopManager:
                 WebsiteWindow(self, 
                             (screen_width//2 - width//2, screen_height//2 - height//2), 
                             (width, height))
+            elif keyboard.is_pressed('d'):
+                CommandWindow(self, 
+                            (screen_width//2 - width//2, screen_height//2 - height//2), 
+                            (width, height))
         
-    def load_webpages(self, file_name):
+    def load_file(self, file_name):
         url_list = []
         
         try:

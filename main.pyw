@@ -1,4 +1,4 @@
-from ManagerWindow import ManagerWindow
+from PyTopWindow import ManagerWindow
 from PyTopManager import PyTopManager
 import threading
 

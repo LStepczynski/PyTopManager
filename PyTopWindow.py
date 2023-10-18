@@ -1,5 +1,6 @@
 import tkinter as tk
 import webbrowser
+import os
 
 
 class ManagerWindow:
@@ -65,6 +66,7 @@ class ClipboardWindow:
             tk.Button(self.root, 
                       text=label, 
                       height=1,
+                      bg= "lightgray" if self.pyTopManager.current_clipboard == index else "white",
                       font=('',15), 
                       command=lambda i=index: self.change_clipboard(i)).pack(fill='x')
     
@@ -82,6 +84,7 @@ class ClipboardWindow:
     def change_clipboard(self, index):
         self.pyTopManager.change_clipboard(index)
         self.root.destroy()
+
 
 
 class WebsiteWindow:
@@ -105,7 +108,7 @@ class WebsiteWindow:
             else: 
                 label = element
 
-            frame = tk.Frame(self.root, bg='black')
+            frame = tk.Frame(self.root)
             
             # Create a button with label text and a unique command based on the index 'i'
             tk.Button(
@@ -114,7 +117,7 @@ class WebsiteWindow:
                 height=1,
                 width=24,
                 font=('', 15), 
-                command=lambda url=label, i=index: self.open_webpage(url, i)
+                command=lambda label=label, i=index: self.open_webpage(label, i)
             ).grid(row=index, column=0) 
             
             # Create a delete button (assuming this is what it is for) with a unique command
@@ -133,11 +136,11 @@ class WebsiteWindow:
         self.root.mainloop()
 
 
-    def open_webpage(self, url, index):
-        if url == "Add Website" or "":
+    def open_webpage(self, label, index):
+        if label == "Add Website" or "":
             self.add_webpage(index)
         else:
-            webbrowser.open(url)
+            webbrowser.open(self.pyTopManager.webpage_list[index])
             self.root.destroy()
 
 
@@ -173,8 +176,96 @@ class WebsiteWindow:
             if key != str(index):
                 continue
             self.open_webpage(self.pyTopManager.webpage_list[index], index)
-        
 
-    def change_clipboard(self, index):
-        self.pyTopManager.change_clipboard(index)
+
+
+class CommandWindow:
+    def __init__(self, pyTopManager, position, size):
+            self.pyTopManager = pyTopManager
+            self.position = position
+
+            self.root = tk.Tk()
+            self.root.title("Commands")
+            self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
+            self.root.attributes("-topmost", True)
+            self.root.attributes("-toolwindow", True)
+
+            self.root.bind("<KeyPress>", self.on_key_press)
+
+            for index, element in enumerate(self.pyTopManager.command_list):
+                if element == "":
+                    label = "Add Command"
+                elif len(element) >= 20:
+                    label = element[:20] + "..."
+                else: 
+                    label = element
+
+                frame = tk.Frame(self.root, bg='black')
+                
+                # Create a button with label text and a unique command based on the index 'i'
+                tk.Button(
+                    frame, 
+                    text=label, 
+                    height=1,
+                    width=24,
+                    font=('', 15), 
+                    command=lambda label=label, i=index: self.run_command(label, i)
+                ).grid(row=index, column=0) 
+                
+                # Create a delete button (assuming this is what it is for) with a unique command
+                tk.Button(
+                    frame, 
+                    text="X", 
+                    height=1,
+                    font=('', 15), 
+                    command=lambda i=index: self.submit_command(i, "")
+                ).grid(row=index, column=1) 
+                
+                frame.pack(fill='x')
+
+        
+            self.root.focus_force()
+            self.root.mainloop()
+
+
+    def submit_command(self, index, command):
+        self.pyTopManager.command_list[index] = command
+        with open(self.pyTopManager.command_list_file, 'w') as file:
+            for line in self.pyTopManager.command_list:
+                file.write(line + "\n")
         self.root.destroy()
+
+
+    def run_command(self, label, index):
+        if label == "Add Command" or "":
+            self.add_command(index)
+        else:
+            os.system(self.pyTopManager.command_list[index])
+            self.root.destroy()
+
+
+    def add_command(self, index):
+        self.topwindow = tk.Toplevel(self.root)
+        self.topwindow.title("Add Command")
+        self.topwindow.geometry("350x150")
+        self.topwindow.attributes("-topmost", True)
+        self.topwindow.attributes("-toolwindow", True)
+
+        self.topwindow_label = tk.Label(self.topwindow, text="Enter a command", font=('',20))
+        self.topwindow_label.pack()
+        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_input.pack(pady=20)
+        self.topwindow_submit = tk.Button(self.topwindow, 
+                                        text="Submit", 
+                                        font=('', 15), 
+                                        command=lambda: self.submit_command(index, self.topwindow_input.get()))
+        self.topwindow_submit.pack()
+
+
+    def on_key_press(self, event):
+        key = event.keysym
+        for index in range(10):
+            if key != str(index):
+                continue
+            self.run_command(self.pyTopManager.command_list[index], index)
+        
