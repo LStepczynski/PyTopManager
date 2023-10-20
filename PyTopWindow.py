@@ -22,8 +22,14 @@ class ManagerWindow:
         self.info = tk.Label(self.root, text="Close This Window To Close the Program", font=('', 15))
         self.info.pack(pady=15)
 
-        self.github = tk.Button(text="How To Use ?", command=self.howToUse, font=('', 15))
-        self.github.pack()
+        self.button_frame = tk.Frame(self.root)
+        self.button_frame.pack()
+
+        self.github = tk.Button(self.button_frame, width=12, text="How To Use ?", command=self.howToUse, font=('', 15))
+        self.github.grid(row=0, column=0, padx=10)
+
+        self.settings = tk.Button(self.button_frame, width=12, text="Settings", command=self.pyTopManager.settings, font=('', 15))
+        self.settings.grid(row=0, column=1, padx=10)
 
         # Bind the close event to a function
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -269,3 +275,45 @@ class CommandWindow:
                 continue
             self.run_command(self.pyTopManager.command_list[index], index)
         
+
+
+class SettingsWindow:
+    def __init__(self, pyTopManger, position, size):
+        self.pyTopManager = pyTopManger
+        self.position = position
+        self.size = size
+
+        self.root = tk.Tk()
+        self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
+        self.root.title("Settings")
+        self.root.attributes("-topmost", True)
+        self.root.attributes("-toolwindow", True)
+
+        self.main_label = tk.Label(self.root, text="Settings", font=('',25))
+        self.main_label.pack()
+
+        self.clipboard_label = tk.Label(self.root, text="Current Key Bind for the Clipboard window:", font=('',13))
+        self.clipboard_label.pack(pady=10)
+
+        self.clipboard_keybind_label = tk.Label(self.root, 
+                                                text=" + ".join(self.pyTopManager.clipboard_window_keybinds),
+                                                font=('', 12))
+        self.clipboard_keybind_label.pack()
+
+        self.webpage_label = tk.Label(self.root, text="Current Key Bind for the Webpage window:", font=('',13))
+        self.webpage_label.pack(pady=10)
+
+        self.webpage_keybind_label = tk.Label(self.root, 
+                                                text=" + ".join(self.pyTopManager.webpage_window_keybinds),
+                                                font=('', 12))
+        self.webpage_keybind_label.pack()
+
+        self.command_label = tk.Label(self.root, text="Current Key Bind for the Command window:", font=('',13))
+        self.command_label.pack(pady=10)
+
+        self.command_keybind_label = tk.Label(self.root, 
+                                                text=" + ".join(self.pyTopManager.command_window_keybinds),
+                                                font=('', 12))
+        self.command_keybind_label.pack()
+
+        self.root.mainloop()

@@ -1,4 +1,4 @@
-from PyTopWindow import ClipboardWindow, WebsiteWindow, CommandWindow
+from PyTopWindow import ClipboardWindow, WebsiteWindow, CommandWindow, SettingsWindow
 import pyperclip
 import keyboard
 import ctypes
@@ -16,6 +16,19 @@ class PyTopManager:
         
         self.command_list_file = "commands.txt"
         self.command_list = self.load_file(self.command_list_file)
+
+        self.screen_width = ctypes.windll.user32.GetSystemMetrics(0)
+        self.screen_height = ctypes.windll.user32.GetSystemMetrics(1)
+
+        self.clipboard_window_keybinds = ["CTRL", "SHIFT", "a"]
+        self.webpage_window_keybinds   = ["CTRL", "SHIFT", "s"]
+        self.command_window_keybinds   = ["CTRL", "SHIFT", "d"]
+
+
+    def settings(self):
+        SettingsWindow(self,
+                       (self.screen_width//2 - 400//2, self.screen_height//2 - 400//2),
+                       (400, 400))
         
     
     def change_clipboard(self, clipboard_index):
@@ -24,27 +37,26 @@ class PyTopManager:
         pyperclip.copy(self.clipboard_list[self.current_clipboard])
 
     def check_key(self):
-        if keyboard.is_pressed('SHIFT') and keyboard.is_pressed("CTRL"):
-            screen_width = ctypes.windll.user32.GetSystemMetrics(0)
-            screen_height = ctypes.windll.user32.GetSystemMetrics(1)
+        clipboard = self.clipboard_window_keybinds
+        webpage = self.webpage_window_keybinds
+        command = self.command_window_keybinds
+        width = 300
+        height = 400
 
-            width = 300
-            height = 400
+        if keyboard.is_pressed(clipboard[0]) and keyboard.is_pressed(clipboard[1]) and keyboard.is_pressed(clipboard[2]):
+            self.clipboard_list[self.current_clipboard] = pyperclip.paste()
 
-            if keyboard.is_pressed('a'):
-                self.clipboard_list[self.current_clipboard] = pyperclip.paste()
-
-                ClipboardWindow(self, 
-                                (screen_width//2 - width//2, screen_height//2 - height//2), 
-                                (width, height))
-            elif keyboard.is_pressed('s'):
-                WebsiteWindow(self, 
-                            (screen_width//2 - width//2, screen_height//2 - height//2), 
+            ClipboardWindow(self, 
+                            (self.screen_width//2 - width//2, self.screen_height//2 - height//2), 
                             (width, height))
-            elif keyboard.is_pressed('d'):
-                CommandWindow(self, 
-                            (screen_width//2 - width//2, screen_height//2 - height//2), 
-                            (width, height))
+        elif keyboard.is_pressed(webpage[0]) and keyboard.is_pressed(webpage[1]) and keyboard.is_pressed(webpage[2]):
+            WebsiteWindow(self, 
+                        (self.screen_width//2 - width//2, self.screen_height//2 - height//2), 
+                        (width, height))
+        elif keyboard.is_pressed(command[0]) and keyboard.is_pressed(command[1]) and keyboard.is_pressed(command[2]):
+            CommandWindow(self, 
+                        (self.screen_width//2 - width//2, self.screen_height//2 - height//2), 
+                        (width, height))
         
     def load_file(self, file_name):
         url_list = []
