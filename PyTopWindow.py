@@ -1,5 +1,6 @@
 import tkinter as tk
 import webbrowser
+import threading
 import os
 
 
@@ -246,7 +247,7 @@ class CommandWindow:
         if label == "Add Command" or "":
             self.add_command(index)
         else:
-            os.system(self.pyTopManager.command_list[index])
+            threading.Thread(target=os.system, args=(self.pyTopManager.command_list[index],)).start()
             self.root.destroy()
 
 
@@ -292,28 +293,61 @@ class SettingsWindow:
         self.main_label = tk.Label(self.root, text="Settings", font=('',25))
         self.main_label.pack()
 
-        self.clipboard_label = tk.Label(self.root, text="Current Key Bind for the Clipboard window:", font=('',13))
-        self.clipboard_label.pack(pady=10)
+        # Clipboard Window
+        self.clipboard_frame = tk.Frame(self.root)
+        self.clipboard_frame.pack(pady=15)
 
-        self.clipboard_keybind_label = tk.Label(self.root, 
+        self.clipboard_label = tk.Label(self.clipboard_frame, text="Current Key Bind for the Clipboard window:", font=('',13))
+        self.clipboard_label.pack()
+
+        self.clipboard_inside_frame = tk.Frame(self.clipboard_frame)
+        self.clipboard_inside_frame.pack(pady=10)
+
+        self.clipboard_keybind_label = tk.Label(self.clipboard_inside_frame, 
                                                 text=" + ".join(self.pyTopManager.clipboard_window_keybinds),
                                                 font=('', 12))
-        self.clipboard_keybind_label.pack()
+        self.clipboard_keybind_label.grid(row=0, column=0, padx=20)
 
-        self.webpage_label = tk.Label(self.root, text="Current Key Bind for the Webpage window:", font=('',13))
-        self.webpage_label.pack(pady=10)
+        self.clipboard_keybind_change = tk.Button(self.clipboard_inside_frame, 
+                                                  text="Change", 
+                                                  command=lambda: self.change_keybinds(self.pyTopManager.clipboard_window_keybinds))
+        self.clipboard_keybind_change.grid(row=0, column=1, padx=20)
 
-        self.webpage_keybind_label = tk.Label(self.root, 
+        # Webpage Window
+        self.webpage_frame = tk.Frame(self.root)
+        self.webpage_frame.pack(pady=15)
+
+        self.webpage_label = tk.Label(self.webpage_frame, text="Current Key Bind for the Webpage window:", font=('',13))
+        self.webpage_label.pack()
+
+        self.webpage_keybind_label = tk.Label(self.webpage_frame, 
                                                 text=" + ".join(self.pyTopManager.webpage_window_keybinds),
                                                 font=('', 12))
         self.webpage_keybind_label.pack()
 
-        self.command_label = tk.Label(self.root, text="Current Key Bind for the Command window:", font=('',13))
-        self.command_label.pack(pady=10)
+        # Command Window
+        self.command_frame = tk.Frame(self.root)
+        self.command_frame.pack(pady=15)
 
-        self.command_keybind_label = tk.Label(self.root, 
+        self.command_label = tk.Label(self.command_frame, text="Current Key Bind for the Command window:", font=('',13))
+        self.command_label.pack()
+
+        self.command_keybind_label = tk.Label(self.command_frame, 
                                                 text=" + ".join(self.pyTopManager.command_window_keybinds),
                                                 font=('', 12))
         self.command_keybind_label.pack()
 
         self.root.mainloop()
+    
+    def change_keybinds(self, keybind_list):
+        self.topwindow = tk.Toplevel(self.root)
+        self.topwindow.title("Change Keybinds")
+        self.topwindow.geometry("300x130")
+        self.topwindow.attributes("-topmost", True)
+        self.topwindow.attributes("-toolwindow", True)
+
+        self.topwindow_label = tk.Label(self.topwindow, text="Press the combination of\n keys you want to use", font=('', 18))
+        self.topwindow_label.pack(pady=10)
+
+        self.topwindow_keybind_label = tk.Label(self.topwindow, text="? + ? + ?", font=('', 20))
+        self.topwindow_keybind_label.pack()
