@@ -1,6 +1,7 @@
 import tkinter as tk
 import webbrowser
 import threading
+import time
 import os
 
 
@@ -17,18 +18,22 @@ class ManagerWindow:
         self.root.geometry("400x225")
         self.root.title("PyTopManager")
 
+        # Main Label of the Main window
         self.main_label = tk.Label(self.root, text="PyTopManager\nIs Currently Working", font=("", 25))
         self.main_label.pack(pady=15)
 
+        #Label of the Main window
         self.info = tk.Label(self.root, text="Close This Window To Close the Program", font=('', 15))
         self.info.pack(pady=15)
 
         self.button_frame = tk.Frame(self.root)
         self.button_frame.pack()
 
+        # Button redirecting to the github page
         self.github = tk.Button(self.button_frame, width=12, text="How To Use ?", command=self.howToUse, font=('', 15))
         self.github.grid(row=0, column=0, padx=10)
 
+        # Button opening the settings window
         self.settings = tk.Button(self.button_frame, width=12, text="Settings", command=self.pyTopManager.settings, font=('', 15))
         self.settings.grid(row=0, column=1, padx=10)
 
@@ -49,9 +54,10 @@ class ManagerWindow:
 
 
 class ClipboardWindow:
+    """GUI interface for switching between clipboards"""
     def __init__(self, pyTopManager, position, size):
-        self.pyTopManager = pyTopManager
-        self.position = position
+        self.pyTopManager = pyTopManager 
+        self.position = position # Position on the screen the window will show up at
 
         self.root = tk.Tk()
         self.root.title("Clipboards")
@@ -61,6 +67,7 @@ class ClipboardWindow:
 
         self.root.bind("<KeyPress>", self.on_key_press)
 
+        # Creates the buttons to switch between clipboards
         for index, element in enumerate(self.pyTopManager.clipboard_list):
             label = f"Clipboard {index}: "
             if len(element) == 0:
@@ -81,6 +88,7 @@ class ClipboardWindow:
         self.root.mainloop()
 
     def on_key_press(self, event):
+        """Listens for a number and switches to a corresponding clipboard"""
         key = event.keysym
         for index in range(10):
             if key != str(index):
@@ -89,15 +97,17 @@ class ClipboardWindow:
                 
 
     def change_clipboard(self, index):
+        """Changes to a different clipboard"""
         self.pyTopManager.change_clipboard(index)
         self.root.destroy()
 
 
 
 class WebsiteWindow:
+    """GUI interface for quick opening of websites"""
     def __init__(self, pyTopManager, position, size):
         self.pyTopManager = pyTopManager
-        self.position = position
+        self.position = position # Position on the screen the window will show up at
 
         self.root = tk.Tk()
         self.root.title("Websites")
@@ -107,7 +117,10 @@ class WebsiteWindow:
 
         self.root.bind("<KeyPress>", self.on_key_press)
 
+        # Creates the buttons that will open websites
         for index, element in enumerate(self.pyTopManager.webpage_list):
+
+            # Shortens the text if it is too long
             if element == "":
                 label = "Add Website"
             elif len(element) >= 20:
@@ -117,7 +130,7 @@ class WebsiteWindow:
 
             frame = tk.Frame(self.root)
             
-            # Create a button with label text and a unique command based on the index 'i'
+            # Create a button that will either open a website or ask to set a website to the button
             tk.Button(
                 frame, 
                 text=label, 
@@ -127,7 +140,7 @@ class WebsiteWindow:
                 command=lambda label=label, i=index: self.open_webpage(label, i)
             ).grid(row=index, column=0) 
             
-            # Create a delete button (assuming this is what it is for) with a unique command
+            # Create a delete button to delete a website from the button
             tk.Button(
                 frame, 
                 text="X", 
@@ -144,22 +157,31 @@ class WebsiteWindow:
 
 
     def open_webpage(self, label, index):
+        """Opens a webpage or asks for an url"""
+
+        # If button is not linked to any website asks for an URL
         if label == "Add Website" or "":
             self.add_webpage(index)
+        
+        # Opens a website and destroys the window
         else:
             webbrowser.open(self.pyTopManager.webpage_list[index])
             self.root.destroy()
 
 
     def add_webpage(self, index):
+        """Window to ask the user for an url"""
         self.topwindow = tk.Toplevel(self.root)
         self.topwindow.title("Add Webpage")
         self.topwindow.geometry("350x150")
         self.topwindow.attributes("-topmost", True)
         self.topwindow.attributes("-toolwindow", True)
 
+        # Main label of the add webpage window
         self.topwindow_label = tk.Label(self.topwindow, text="Enter an Url", font=('',20))
         self.topwindow_label.pack()
+
+        # URL entry of the add webpage window
         self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
         self.topwindow_input.pack(pady=20)
         self.topwindow_submit = tk.Button(self.topwindow, 
@@ -170,6 +192,7 @@ class WebsiteWindow:
 
 
     def submit_webpage(self, index, url):
+        """Reads the URL in the self.topwindow_input and edits the file where webpages are stored"""
         self.pyTopManager.webpage_list[index] = url
         with open(self.pyTopManager.webpage_list_file, 'w') as file:
             for line in self.pyTopManager.webpage_list:
@@ -178,6 +201,7 @@ class WebsiteWindow:
 
 
     def on_key_press(self, event):
+        """Listens for a number and opens a corresponding website"""
         key = event.keysym
         for index in range(10):
             if key != str(index):
@@ -187,9 +211,10 @@ class WebsiteWindow:
 
 
 class CommandWindow:
+    """GUI interface to quickly run commands"""
     def __init__(self, pyTopManager, position, size):
             self.pyTopManager = pyTopManager
-            self.position = position
+            self.position = position # Position on the screen the window will show up at
 
             self.root = tk.Tk()
             self.root.title("Commands")
@@ -199,7 +224,10 @@ class CommandWindow:
 
             self.root.bind("<KeyPress>", self.on_key_press)
 
+            # Creates the buttons to quickly run commands
             for index, element in enumerate(self.pyTopManager.command_list):
+                
+                # Shortens the text if too long
                 if element == "":
                     label = "Add Command"
                 elif len(element) >= 20:
@@ -209,7 +237,7 @@ class CommandWindow:
 
                 frame = tk.Frame(self.root, bg='black')
                 
-                # Create a button with label text and a unique command based on the index 'i'
+                # Create a button with label running a command
                 tk.Button(
                     frame, 
                     text=label, 
@@ -219,7 +247,7 @@ class CommandWindow:
                     command=lambda label=label, i=index: self.run_command(label, i)
                 ).grid(row=index, column=0) 
                 
-                # Create a delete button (assuming this is what it is for) with a unique command
+                # Create a delete button to delete a command
                 tk.Button(
                     frame, 
                     text="X", 
@@ -236,6 +264,7 @@ class CommandWindow:
 
 
     def submit_command(self, index, command):
+        """Changes a command to a new one"""
         self.pyTopManager.command_list[index] = command
         with open(self.pyTopManager.command_list_file, 'w') as file:
             for line in self.pyTopManager.command_list:
@@ -244,24 +273,35 @@ class CommandWindow:
 
 
     def run_command(self, label, index):
+        """Runs a command or asks for one"""
+
+        # If the button is not linked to any command asks for one
         if label == "Add Command" or "":
             self.add_command(index)
+
+        # Runs the command linked to the button
         else:
             threading.Thread(target=os.system, args=(self.pyTopManager.command_list[index],)).start()
             self.root.destroy()
 
 
     def add_command(self, index):
+        """Opens the add_command window"""
         self.topwindow = tk.Toplevel(self.root)
         self.topwindow.title("Add Command")
         self.topwindow.geometry("350x150")
         self.topwindow.attributes("-topmost", True)
         self.topwindow.attributes("-toolwindow", True)
 
+        # Main label of the add_command window
         self.topwindow_label = tk.Label(self.topwindow, text="Enter a command", font=('',20))
         self.topwindow_label.pack()
+
+        # Command entry of the add_command window
         self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
         self.topwindow_input.pack(pady=20)
+
+        # Submit button of the add_command window
         self.topwindow_submit = tk.Button(self.topwindow, 
                                         text="Submit", 
                                         font=('', 15), 
@@ -270,6 +310,7 @@ class CommandWindow:
 
 
     def on_key_press(self, event):
+        """Listens for a number and runs a command corresponding to it"""
         key = event.keysym
         for index in range(10):
             if key != str(index):
@@ -279,9 +320,81 @@ class CommandWindow:
 
 
 class SettingsWindow:
+    """GUI interface for the settings of the PyTopManager"""
+
+    class ChangeKeybinds:
+        """GUI interface to change keybinds of the PyTopManager application"""
+        def __init__(self, parent, keybind_list, label):
+            self.parent = parent # The SettingsWindow object
+            self.keybind_list = keybind_list 
+            self.label_to_edit = label
+
+            self.root = tk.Toplevel(self.parent)
+            self.root.title("Change Keybinds")
+            self.root.geometry("300x130")
+            self.root.attributes("-topmost", True)
+            self.root.attributes("-toolwindow", True)
+            self.keybind_index = 0
+
+            # new keybinds for a selected window
+            self.keybind_text = ["?" for _ in range(3)]
+
+            # Main label of the ChangeKeybinds window
+            self.main_label = tk.Label(self.root, text="Press the combination of\n keys you want to use", font=('', 18))
+            self.main_label.pack(pady=10)
+
+            # Label that shows the selected keybinds by the user of the ChangeKeybinds window
+            self.keybind_label = tk.Label(self.root, text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}", font=('', 20))
+            self.keybind_label.pack()
+
+            self.root.bind("<KeyPress>", self.on_key_press)
+
+        def on_key_press(self, event):
+            """Listens for 3 keys and sets them to the activation keybind of the selected window"""
+            key = event.keysym
+            
+            # Converts the names of the key so the keyboard module can undestand them
+            match key:
+                case "Control_L":
+                    key = 'CTRL'
+                case "Control_R":
+                    key = 'CTRL'
+                case "Shift_L":
+                    key = 'SHIFT'
+                case "Shift_R":
+                    key = 'SHIFT'
+                case "Alt_L":
+                    key = 'ALT'
+                case "Alt_R":
+                    key = 'ALT'
+
+            # Sets the key as the new keybind
+            self.keybind_list[self.keybind_index] = key
+
+            # Updates the Label that shows the selected keybinds by the user of the ChangeKeybinds window
+            match self.keybind_index:
+                case 0:
+                    self.keybind_text[0] = key
+                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
+                case 1:
+                    self.keybind_text[1] = key
+                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
+                case 2:
+                    self.keybind_text[2] = key
+                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
+
+            # If the user already inputed 3 keys closes the window and updates the keybind label of the selected window
+            if self.keybind_index == 2:
+                self.keybind_index = 0
+                self.label_to_edit.config(text=" + ".join(self.keybind_list))
+                self.root.destroy()
+                return
+
+            self.keybind_index += 1
+
     def __init__(self, pyTopManger, position, size):
         self.pyTopManager = pyTopManger
-        self.position = position
+        self.position = position # Position on the screen the window will show up at
         self.size = size
 
         self.root = tk.Tk()
@@ -290,6 +403,7 @@ class SettingsWindow:
         self.root.attributes("-topmost", True)
         self.root.attributes("-toolwindow", True)
 
+        # Main label of the Settings window
         self.main_label = tk.Label(self.root, text="Settings", font=('',25))
         self.main_label.pack()
 
@@ -303,14 +417,18 @@ class SettingsWindow:
         self.clipboard_inside_frame = tk.Frame(self.clipboard_frame)
         self.clipboard_inside_frame.pack(pady=10)
 
+        # Label showing the current keybind for the clipboard window
         self.clipboard_keybind_label = tk.Label(self.clipboard_inside_frame, 
                                                 text=" + ".join(self.pyTopManager.clipboard_window_keybinds),
                                                 font=('', 12))
         self.clipboard_keybind_label.grid(row=0, column=0, padx=20)
 
+        # Button launching the ChangeKeybinds window for the clipboard window
         self.clipboard_keybind_change = tk.Button(self.clipboard_inside_frame, 
                                                   text="Change", 
-                                                  command=lambda: self.change_keybinds(self.pyTopManager.clipboard_window_keybinds))
+                                                  command=lambda: self.ChangeKeybinds(self.root, 
+                                                                                      self.pyTopManager.clipboard_window_keybinds, 
+                                                                                      self.clipboard_keybind_label))
         self.clipboard_keybind_change.grid(row=0, column=1, padx=20)
 
         # Webpage Window
@@ -320,10 +438,22 @@ class SettingsWindow:
         self.webpage_label = tk.Label(self.webpage_frame, text="Current Key Bind for the Webpage window:", font=('',13))
         self.webpage_label.pack()
 
-        self.webpage_keybind_label = tk.Label(self.webpage_frame, 
+        self.webpage_inside_frame = tk.Frame(self.webpage_frame)
+        self.webpage_inside_frame.pack(pady=10)
+
+        # Label showing the current keybind for the webpage window
+        self.webpage_keybind_label = tk.Label(self.webpage_inside_frame, 
                                                 text=" + ".join(self.pyTopManager.webpage_window_keybinds),
                                                 font=('', 12))
-        self.webpage_keybind_label.pack()
+        self.webpage_keybind_label.grid(row=0, column=0, padx=20)
+
+        # Button launching the ChangeKeybinds window for the webpage window
+        self.webpage_keybind_change = tk.Button(self.webpage_inside_frame, 
+                                                  text="Change", 
+                                                  command=lambda: self.ChangeKeybinds(self.root, 
+                                                                                      self.pyTopManager.webpage_window_keybinds, 
+                                                                                      self.webpage_keybind_label))
+        self.webpage_keybind_change.grid(row=0, column=1, padx=20)
 
         # Command Window
         self.command_frame = tk.Frame(self.root)
@@ -332,22 +462,21 @@ class SettingsWindow:
         self.command_label = tk.Label(self.command_frame, text="Current Key Bind for the Command window:", font=('',13))
         self.command_label.pack()
 
-        self.command_keybind_label = tk.Label(self.command_frame, 
+        self.command_inside_frame = tk.Frame(self.command_frame)
+        self.command_inside_frame.pack(pady=10)
+
+        # Label showing the current keybind for the command window
+        self.command_keybind_label = tk.Label(self.command_inside_frame, 
                                                 text=" + ".join(self.pyTopManager.command_window_keybinds),
                                                 font=('', 12))
-        self.command_keybind_label.pack()
+        self.command_keybind_label.grid(row=0, column=0, padx=20)
+
+        # Button launching the ChangeKeybinds window for the command window
+        self.command_keybind_change = tk.Button(self.command_inside_frame, 
+                                                  text="Change", 
+                                                  command=lambda: self.ChangeKeybinds(self.root, 
+                                                                                      self.pyTopManager.command_window_keybinds, 
+                                                                                      self.command_keybind_label))
+        self.command_keybind_change.grid(row=0, column=1, padx=20)
 
         self.root.mainloop()
-    
-    def change_keybinds(self, keybind_list):
-        self.topwindow = tk.Toplevel(self.root)
-        self.topwindow.title("Change Keybinds")
-        self.topwindow.geometry("300x130")
-        self.topwindow.attributes("-topmost", True)
-        self.topwindow.attributes("-toolwindow", True)
-
-        self.topwindow_label = tk.Label(self.topwindow, text="Press the combination of\n keys you want to use", font=('', 18))
-        self.topwindow_label.pack(pady=10)
-
-        self.topwindow_keybind_label = tk.Label(self.topwindow, text="? + ? + ?", font=('', 20))
-        self.topwindow_keybind_label.pack()
