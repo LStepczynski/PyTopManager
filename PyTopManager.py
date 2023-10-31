@@ -23,9 +23,24 @@ class PyTopManager:
         self.screen_height = ctypes.windll.user32.GetSystemMetrics(1)
 
         # Keybinds for each window
-        self.clipboard_window_keybinds = ["CTRL", "SHIFT", "a"]
-        self.webpage_window_keybinds   = ["CTRL", "SHIFT", "s"]
-        self.command_window_keybinds   = ["CTRL", "SHIFT", "d"]
+        self.keybind_file = "keybinds.txt"
+        try:
+            with open(self.keybind_file, 'r') as f:
+                lines = f.read().splitlines()  # Read lines and strip newline characters
+
+                if len(lines) != 3:
+                    raise Exception
+                for line in lines:
+                    if len(line.split()) != 3:
+                        raise Exception
+                    
+                self.clipboard_window_keybinds = lines[0].split()
+                self.webpage_window_keybinds = lines[1].split()
+                self.command_window_keybinds = lines[2].split()
+        except Exception:
+            self.clipboard_window_keybinds = ["CTRL", "SHIFT", "a"]
+            self.webpage_window_keybinds   = ["CTRL", "SHIFT", "s"]
+            self.command_window_keybinds   = ["CTRL", "SHIFT", "d"]
 
 
     def settings(self):
