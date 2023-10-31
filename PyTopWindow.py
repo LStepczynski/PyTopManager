@@ -324,10 +324,11 @@ class SettingsWindow:
 
     class ChangeKeybinds:
         """GUI interface to change keybinds of the PyTopManager application"""
-        def __init__(self, parent, keybind_list, label):
+        def __init__(self, parent, keybind_list, label, pyTopManager):
             self.parent = parent # The SettingsWindow object
             self.keybind_list = keybind_list 
             self.label_to_edit = label
+            self.pyTopManager = pyTopManager
 
             self.root = tk.Toplevel(self.parent)
             self.root.title("Change Keybinds")
@@ -349,6 +350,15 @@ class SettingsWindow:
 
             self.root.bind("<KeyPress>", self.on_key_press)
 
+
+        def update_file(self):
+            """Updates the file storing the keybinds"""
+            with open(self.pyTopManager.keybind_file, 'w') as f:
+                f.write(str(" ".join(self.pyTopManager.clipboard_window_keybinds)) + '\n')
+                f.write(str(" ".join(self.pyTopManager.webpage_window_keybinds)) + '\n')
+                f.write(str(" ".join(self.pyTopManager.command_window_keybinds)) + '\n')
+
+
         def on_key_press(self, event):
             """Listens for 3 keys and sets them to the activation keybind of the selected window"""
             key = event.keysym
@@ -369,7 +379,7 @@ class SettingsWindow:
                     key = 'ALT'
 
             # Sets the key as the new keybind
-            self.keybind_list[self.keybind_index] = key
+            self.keybind_list[self.keybind_index] = key.upper()
 
             # Updates the Label that shows the selected keybinds by the user of the ChangeKeybinds window
             match self.keybind_index:
@@ -387,6 +397,7 @@ class SettingsWindow:
             if self.keybind_index == 2:
                 self.keybind_index = 0
                 self.label_to_edit.config(text=" + ".join(self.keybind_list))
+                self.update_file()
                 self.root.destroy()
                 return
 
@@ -428,7 +439,8 @@ class SettingsWindow:
                                                   text="Change", 
                                                   command=lambda: self.ChangeKeybinds(self.root, 
                                                                                       self.pyTopManager.clipboard_window_keybinds, 
-                                                                                      self.clipboard_keybind_label))
+                                                                                      self.clipboard_keybind_label,
+                                                                                      self.pyTopManager))
         self.clipboard_keybind_change.grid(row=0, column=1, padx=20)
 
         # Webpage Window
@@ -452,7 +464,8 @@ class SettingsWindow:
                                                   text="Change", 
                                                   command=lambda: self.ChangeKeybinds(self.root, 
                                                                                       self.pyTopManager.webpage_window_keybinds, 
-                                                                                      self.webpage_keybind_label))
+                                                                                      self.webpage_keybind_label,
+                                                                                      self.pyTopManager))
         self.webpage_keybind_change.grid(row=0, column=1, padx=20)
 
         # Command Window
@@ -476,7 +489,8 @@ class SettingsWindow:
                                                   text="Change", 
                                                   command=lambda: self.ChangeKeybinds(self.root, 
                                                                                       self.pyTopManager.command_window_keybinds, 
-                                                                                      self.command_keybind_label))
+                                                                                      self.command_keybind_label,
+                                                                                      self.pyTopManager))
         self.command_keybind_change.grid(row=0, column=1, padx=20)
 
         self.root.mainloop()
