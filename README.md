@@ -25,6 +25,12 @@ To open the command window press: <br> <br>
 The command window allows the user to save most used commands and quickly activate them, eliminating the need to type the command each time in order to use it.
 Press keys from 0 to 9 to quickly select a clipboard.
 
+### Program Window
+To open the command window press: <br> <br>
+```CTRL``` + ```SHIFT``` + ```f``` <br> <br>
+The program window allows the user to input the path to an executable file and save it. After saving the user can quickly run the executable and use 
+the program. (IN PROGRESS)
+
 ### Settings Window
 To open the Settings window click on the **settings button** in the main window. <br>
 The settings window shows keybinds for all the windows and allows the user to change them.
