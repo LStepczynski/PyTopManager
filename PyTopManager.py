@@ -1,4 +1,4 @@
-from PyTopWindow import ClipboardWindow, WebsiteWindow, CommandWindow, SettingsWindow
+from PyTopWindow import ClipboardWindow, WebsiteWindow, CommandWindow, ExecutableWindow, SettingsWindow
 import pyperclip
 import keyboard
 import ctypes
@@ -19,6 +19,10 @@ class PyTopManager:
         self.command_list_file = "commands.txt"
         self.command_list = self.load_file(self.command_list_file)
 
+        # Contains saved programs
+        self.executable_list_file = "executables.txt"
+        self.executable_list = self.load_file(self.executable_list_file)
+
         self.screen_width = ctypes.windll.user32.GetSystemMetrics(0)
         self.screen_height = ctypes.windll.user32.GetSystemMetrics(1)
 
@@ -28,7 +32,7 @@ class PyTopManager:
             with open(self.keybind_file, 'r') as f:
                 lines = f.read().splitlines()  # Read lines and strip newline characters
 
-                if len(lines) != 3:
+                if len(lines) != 4:
                     raise Exception
                 for line in lines:
                     if len(line.split()) != 3:
@@ -37,17 +41,20 @@ class PyTopManager:
                 self.clipboard_window_keybinds = lines[0].split()
                 self.webpage_window_keybinds = lines[1].split()
                 self.command_window_keybinds = lines[2].split()
+                self.executable_window_keybinds = lines[3].split()
         except Exception:
-            self.clipboard_window_keybinds = ["CTRL", "SHIFT", "a"]
-            self.webpage_window_keybinds   = ["CTRL", "SHIFT", "s"]
-            self.command_window_keybinds   = ["CTRL", "SHIFT", "d"]
+            print("CHUJ NIE DZIALA")
+            self.clipboard_window_keybinds = ["CTRL", "SHIFT", "A"]
+            self.webpage_window_keybinds   = ["CTRL", "SHIFT", "S"]
+            self.command_window_keybinds   = ["CTRL", "SHIFT", "D"]
+            self.executable_window_keybinds= ["CTRL", "SHIFT", "F"]
 
 
     def settings(self):
         """Opens the settings window"""
         SettingsWindow(self,
                        (self.screen_width//2 - 400//2, self.screen_height//2 - 400//2),
-                       (400, 400))
+                       (400, 450))
         
     
     def change_clipboard(self, clipboard_index):
@@ -61,6 +68,7 @@ class PyTopManager:
         clipboard = self.clipboard_window_keybinds
         webpage = self.webpage_window_keybinds
         command = self.command_window_keybinds
+        executable = self.executable_window_keybinds
         width = 300
         height = 400
 
@@ -83,7 +91,14 @@ class PyTopManager:
             CommandWindow(self, 
                         (self.screen_width//2 - width//2, self.screen_height//2 - height//2), 
                         (width, height))
-        
+            
+        # Opens the executable window
+        elif keyboard.is_pressed(executable[0]) and keyboard.is_pressed(executable[1]) and keyboard.is_pressed(executable[2]):
+            ExecutableWindow(self, 
+                        (self.screen_width//2 - width//2, self.screen_height//2 - height//2), 
+                        (width, height))
+
+
     def load_file(self, file_name):
         """Reads the contents of the file and returns a minimum of 10 elements"""
         text_list = []

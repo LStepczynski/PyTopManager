@@ -1,5 +1,7 @@
+from tkinter import messagebox
 import tkinter as tk
 import webbrowser
+import subprocess
 import threading
 import time
 import os
@@ -316,7 +318,117 @@ class CommandWindow:
             if key != str(index):
                 continue
             self.run_command(self.pyTopManager.command_list[index], index)
+
+
+class ExecutableWindow:
+    """GUI interface to quickly open files"""
+    def __init__(self, pyTopManager, position, size):
+            self.pyTopManager = pyTopManager
+            self.position = position # Position on the screen the window will show up at
+
+            self.root = tk.Tk()
+            self.root.title("Programs")
+            self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
+            self.root.attributes("-topmost", True)
+            self.root.attributes("-toolwindow", True)
+
+            self.root.bind("<KeyPress>", self.on_key_press)
+
+            # Creates the buttons to quickly run commands
+            for index, element in enumerate(self.pyTopManager.executable_list):
+                
+                # Shortens the text if too long
+                if element == "":
+                    label = "Add path to .exe"
+                elif len(element) >= 20:
+                    label = element[:20] + "..."
+                else: 
+                    label = element
+
+                frame = tk.Frame(self.root, bg='black')
+                
+                # Create a button with label running a command
+                tk.Button(
+                    frame, 
+                    text=label, 
+                    height=1,
+                    width=24,
+                    font=('', 15), 
+                    command=lambda label=label, i=index: self.run_program(label, i)
+                ).grid(row=index, column=0) 
+                
+                # Create a delete button to delete a command
+                tk.Button(
+                    frame, 
+                    text="X", 
+                    height=1,
+                    font=('', 15), 
+                    command=lambda i=index: self.submit_program(i, "")
+                ).grid(row=index, column=1) 
+                
+                frame.pack(fill='x')
+
         
+            self.root.focus_force()
+            self.root.mainloop()
+
+
+    def submit_program(self, index, command):
+        """Changes a command to a new one"""
+        self.pyTopManager.executable_list[index] = command
+        with open(self.pyTopManager.executable_list_file, 'w') as file:
+            for line in self.pyTopManager.executable_list:
+                file.write(line + "\n")
+        self.root.destroy()
+
+
+    def run_program(self, label, index):
+        """Runs a command or asks for one"""
+
+        # If the button is not linked to any command asks for one
+        if label == "Add path to .exe" or "":
+            self.add_program(index)
+
+        # Runs the command linked to the button
+        else:
+            self.root.destroy()
+            try:
+                subprocess.run(self.pyTopManager.executable_list[index])
+            except Exception as e:
+                messagebox.showerror("Execution problem", f"There has been a problem runing the executable file \n {e}")
+
+
+    def add_program(self, index):
+        """Opens the add_command window"""
+        self.topwindow = tk.Toplevel(self.root)
+        self.topwindow.title("Add File")
+        self.topwindow.geometry("350x150")
+        self.topwindow.attributes("-topmost", True)
+        self.topwindow.attributes("-toolwindow", True)
+
+        # Main label of the add_command window
+        self.topwindow_label = tk.Label(self.topwindow, text="Enter path to .exe", font=('',20))
+        self.topwindow_label.pack()
+
+        # Command entry of the add_command window
+        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_input.pack(pady=20)
+
+        # Submit button of the add_command window
+        self.topwindow_submit = tk.Button(self.topwindow, 
+                                        text="Submit", 
+                                        font=('', 15), 
+                                        command=lambda: self.submit_program(index, self.topwindow_input.get()))
+        self.topwindow_submit.pack()
+
+
+    def on_key_press(self, event):
+        """Listens for a number and runs a command corresponding to it"""
+        key = event.keysym
+        for index in range(10):
+            if key != str(index):
+                continue
+            self.run_program(self.pyTopManager.executable_list[index], index)
 
 
 class SettingsWindow:
@@ -357,6 +469,7 @@ class SettingsWindow:
                 f.write(str(" ".join(self.pyTopManager.clipboard_window_keybinds)) + '\n')
                 f.write(str(" ".join(self.pyTopManager.webpage_window_keybinds)) + '\n')
                 f.write(str(" ".join(self.pyTopManager.command_window_keybinds)) + '\n')
+                f.write(str(" ".join(self.pyTopManager.executable_window_keybinds)) + '\n')
 
 
         def on_key_press(self, event):
@@ -492,5 +605,30 @@ class SettingsWindow:
                                                                                       self.command_keybind_label,
                                                                                       self.pyTopManager))
         self.command_keybind_change.grid(row=0, column=1, padx=20)
+
+        # Executable Window
+        self.executable_frame = tk.Frame(self.root)
+        self.executable_frame.pack(pady=15)
+
+        self.executable_label = tk.Label(self.executable_frame, text="Current Key Bind for the Executable window:", font=('',13))
+        self.executable_label.pack()
+
+        self.executable_inside_frame = tk.Frame(self.executable_frame)
+        self.executable_inside_frame.pack(pady=10)
+
+        # Label showing the current keybind for the executable window
+        self.executable_keybind_label = tk.Label(self.executable_inside_frame, 
+                                                text=" + ".join(self.pyTopManager.executable_window_keybinds),
+                                                font=('', 12))
+        self.executable_keybind_label.grid(row=0, column=0, padx=20)
+
+        # Button launching the ChangeKeybinds window for the executable window
+        self.executable_keybind_change = tk.Button(self.executable_inside_frame, 
+                                                  text="Change", 
+                                                  command=lambda: self.ChangeKeybinds(self.root, 
+                                                                                      self.pyTopManager.executable_window_keybinds, 
+                                                                                      self.executable_keybind_label,
+                                                                                      self.pyTopManager))
+        self.executable_keybind_change.grid(row=0, column=1, padx=20)
 
         self.root.mainloop()
