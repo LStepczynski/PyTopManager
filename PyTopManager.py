@@ -23,6 +23,17 @@ class PyTopManager:
         self.executable_list_file = "executables.txt"
         self.executable_list = self.load_file(self.executable_list_file)
 
+        self.clipboard_window_keybinds = ["CTRL", "SHIFT", "A"]
+        self.webpage_window_keybinds = ["CTRL", "SHIFT", "S"]
+        self.command_window_keybinds = ["CTRL", "SHIFT", "D"]
+        self.executable_window_keybinds = ["CTRL", "SHIFT", "F"]
+
+        self.lists = [self.webpage_list, self.command_list, self.executable_list]
+        self.keybind_lists = [self.clipboard_window_keybinds,
+                              self.webpage_window_keybinds,
+                              self.command_window_keybinds,
+                              self.executable_window_keybinds]
+
         self.screen_width = ctypes.windll.user32.GetSystemMetrics(0)
         self.screen_height = ctypes.windll.user32.GetSystemMetrics(1)
 
@@ -38,16 +49,11 @@ class PyTopManager:
                     if len(line.split()) != 3:
                         raise Exception
                     
-                self.clipboard_window_keybinds = lines[0].split()
-                self.webpage_window_keybinds = lines[1].split()
-                self.command_window_keybinds = lines[2].split()
-                self.executable_window_keybinds = lines[3].split()
+                for index, keybind_list in enumerate(self.keybind_lists):
+                    keybind_list = lines[index].split()
+
         except Exception:
-            print("CHUJ NIE DZIALA")
-            self.clipboard_window_keybinds = ["CTRL", "SHIFT", "A"]
-            self.webpage_window_keybinds   = ["CTRL", "SHIFT", "S"]
-            self.command_window_keybinds   = ["CTRL", "SHIFT", "D"]
-            self.executable_window_keybinds= ["CTRL", "SHIFT", "F"]
+            pass
 
 
     def settings(self):
