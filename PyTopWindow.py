@@ -7,6 +7,38 @@ import time
 import os
 
 
+class Window:
+    def __init__(self, pyTopManager, position, size, title, on_press_func, argslist = None):
+        
+        self.pyTopManager = pyTopManager 
+        self.position = position # Position on the screen the window will show up at
+
+        self.title = title
+        self.argslist = argslist
+
+        self.root = tk.Tk()
+        self.root.title(self.title)
+        self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
+        self.root.attributes("-topmost", True)
+        self.root.attributes("-toolwindow", True)
+
+        self.root.bind("<KeyPress>", self.on_key_press)
+        self.on_press_func = on_press_func
+
+
+    def on_key_press(self, event):
+        """Listens for a number and activates the function linked to it"""
+        key = event.keysym
+        for index in range(10):
+            if key != str(index):
+                continue
+
+            if not self.argslist:
+                self.on_press_func(index)
+            else:
+                self.on_press_func(self.argslist[index], index)
+
+
 class ManagerWindow:
     """Manager Window that allows the user to close the program as well as read more about it"""
     def __init__(self, pyTopManager):
@@ -55,19 +87,14 @@ class ManagerWindow:
 
 
 
-class ClipboardWindow:
+class ClipboardWindow(Window):
     """GUI interface for switching between clipboards"""
     def __init__(self, pyTopManager, position, size):
-        self.pyTopManager = pyTopManager 
-        self.position = position # Position on the screen the window will show up at
-
-        self.root = tk.Tk()
-        self.root.title("Clipboards")
-        self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
-        self.root.attributes("-topmost", True)
-        self.root.attributes("-toolwindow", True)
-
-        self.root.bind("<KeyPress>", self.on_key_press)
+        super().__init__(pyTopManager, 
+                         position, 
+                         size, 
+                         "Clipboards",
+                         self.change_clipboard)
 
         # Creates the buttons to switch between clipboards
         for index, element in enumerate(self.pyTopManager.clipboard_list):
@@ -88,14 +115,6 @@ class ClipboardWindow:
     
         self.root.focus_force()
         self.root.mainloop()
-
-    def on_key_press(self, event):
-        """Listens for a number and switches to a corresponding clipboard"""
-        key = event.keysym
-        for index in range(10):
-            if key != str(index):
-                continue
-            self.change_clipboard(index)
                 
 
     def change_clipboard(self, index):
@@ -105,19 +124,16 @@ class ClipboardWindow:
 
 
 
-class WebsiteWindow:
+class WebsiteWindow(Window):
     """GUI interface for quick opening of websites"""
     def __init__(self, pyTopManager, position, size):
-        self.pyTopManager = pyTopManager
-        self.position = position # Position on the screen the window will show up at
-
-        self.root = tk.Tk()
-        self.root.title("Websites")
-        self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
-        self.root.attributes("-topmost", True)
-        self.root.attributes("-toolwindow", True)
-
-        self.root.bind("<KeyPress>", self.on_key_press)
+        
+        super().__init__(pyTopManager, 
+                         position, 
+                         size, 
+                         "Websites",
+                         self.open_webpage,
+                         pyTopManager.webpage_list)
 
         # Creates the buttons that will open websites
         for index, element in enumerate(self.pyTopManager.webpage_list):
@@ -202,67 +218,53 @@ class WebsiteWindow:
         self.root.destroy()
 
 
-    def on_key_press(self, event):
-        """Listens for a number and opens a corresponding website"""
-        key = event.keysym
-        for index in range(10):
-            if key != str(index):
-                continue
-            self.open_webpage(self.pyTopManager.webpage_list[index], index)
-
-
-
-class CommandWindow:
+class CommandWindow(Window):
     """GUI interface to quickly run commands"""
     def __init__(self, pyTopManager, position, size):
-            self.pyTopManager = pyTopManager
-            self.position = position # Position on the screen the window will show up at
+        super().__init__(pyTopManager, 
+                         position, 
+                         size, 
+                         "Commands",
+                         self.run_command,
+                         pyTopManager.command_list)
 
-            self.root = tk.Tk()
-            self.root.title("Commands")
-            self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
-            self.root.attributes("-topmost", True)
-            self.root.attributes("-toolwindow", True)
+        # Creates the buttons to quickly run commands
+        for index, element in enumerate(self.pyTopManager.command_list):
+            
+            # Shortens the text if too long
+            if element == "":
+                label = "Add Command"
+            elif len(element) >= 20:
+                label = element[:20] + "..."
+            else: 
+                label = element
 
-            self.root.bind("<KeyPress>", self.on_key_press)
+            frame = tk.Frame(self.root, bg='black')
+            
+            # Create a button with label running a command
+            tk.Button(
+                frame, 
+                text=label, 
+                height=1,
+                width=24,
+                font=('', 15), 
+                command=lambda label=label, i=index: self.run_command(label, i)
+            ).grid(row=index, column=0) 
+            
+            # Create a delete button to delete a command
+            tk.Button(
+                frame, 
+                text="X", 
+                height=1,
+                font=('', 15), 
+                command=lambda i=index: self.submit_command(i, "")
+            ).grid(row=index, column=1) 
+            
+            frame.pack(fill='x')
 
-            # Creates the buttons to quickly run commands
-            for index, element in enumerate(self.pyTopManager.command_list):
-                
-                # Shortens the text if too long
-                if element == "":
-                    label = "Add Command"
-                elif len(element) >= 20:
-                    label = element[:20] + "..."
-                else: 
-                    label = element
-
-                frame = tk.Frame(self.root, bg='black')
-                
-                # Create a button with label running a command
-                tk.Button(
-                    frame, 
-                    text=label, 
-                    height=1,
-                    width=24,
-                    font=('', 15), 
-                    command=lambda label=label, i=index: self.run_command(label, i)
-                ).grid(row=index, column=0) 
-                
-                # Create a delete button to delete a command
-                tk.Button(
-                    frame, 
-                    text="X", 
-                    height=1,
-                    font=('', 15), 
-                    command=lambda i=index: self.submit_command(i, "")
-                ).grid(row=index, column=1) 
-                
-                frame.pack(fill='x')
-
-        
-            self.root.focus_force()
-            self.root.mainloop()
+    
+        self.root.focus_force()
+        self.root.mainloop()
 
 
     def submit_command(self, index, command):
@@ -311,66 +313,53 @@ class CommandWindow:
         self.topwindow_submit.pack()
 
 
-    def on_key_press(self, event):
-        """Listens for a number and runs a command corresponding to it"""
-        key = event.keysym
-        for index in range(10):
-            if key != str(index):
-                continue
-            self.run_command(self.pyTopManager.command_list[index], index)
-
-
-class ExecutableWindow:
+class ExecutableWindow(Window):
     """GUI interface to quickly open files"""
     def __init__(self, pyTopManager, position, size):
-            self.pyTopManager = pyTopManager
-            self.position = position # Position on the screen the window will show up at
+        super().__init__(pyTopManager, 
+                         position, 
+                         size, 
+                         "Programs",
+                         self.run_program,
+                         pyTopManager.webpage_list)
 
-            self.root = tk.Tk()
-            self.root.title("Programs")
-            self.root.geometry(f'{size[0]}x{size[1]}+{position[0]}+{position[1]}')
-            self.root.attributes("-topmost", True)
-            self.root.attributes("-toolwindow", True)
+        # Creates the buttons to quickly run commands
+        for index, element in enumerate(self.pyTopManager.executable_list):
+            
+            # Shortens the text if too long
+            if element == "":
+                label = "Add path to .exe"
+            elif len(element) >= 20:
+                label = element[:20] + "..."
+            else: 
+                label = element
 
-            self.root.bind("<KeyPress>", self.on_key_press)
+            frame = tk.Frame(self.root, bg='black')
+            
+            # Create a button with label running a command
+            tk.Button(
+                frame, 
+                text=label, 
+                height=1,
+                width=24,
+                font=('', 15), 
+                command=lambda label=label, i=index: self.run_program(label, i)
+            ).grid(row=index, column=0) 
+            
+            # Create a delete button to delete a command
+            tk.Button(
+                frame, 
+                text="X", 
+                height=1,
+                font=('', 15), 
+                command=lambda i=index: self.submit_program(i, "")
+            ).grid(row=index, column=1) 
+            
+            frame.pack(fill='x')
 
-            # Creates the buttons to quickly run commands
-            for index, element in enumerate(self.pyTopManager.executable_list):
-                
-                # Shortens the text if too long
-                if element == "":
-                    label = "Add path to .exe"
-                elif len(element) >= 20:
-                    label = element[:20] + "..."
-                else: 
-                    label = element
-
-                frame = tk.Frame(self.root, bg='black')
-                
-                # Create a button with label running a command
-                tk.Button(
-                    frame, 
-                    text=label, 
-                    height=1,
-                    width=24,
-                    font=('', 15), 
-                    command=lambda label=label, i=index: self.run_program(label, i)
-                ).grid(row=index, column=0) 
-                
-                # Create a delete button to delete a command
-                tk.Button(
-                    frame, 
-                    text="X", 
-                    height=1,
-                    font=('', 15), 
-                    command=lambda i=index: self.submit_program(i, "")
-                ).grid(row=index, column=1) 
-                
-                frame.pack(fill='x')
-
-        
-            self.root.focus_force()
-            self.root.mainloop()
+    
+        self.root.focus_force()
+        self.root.mainloop()
 
 
     def submit_program(self, index, command):
@@ -393,7 +382,7 @@ class ExecutableWindow:
         else:
             self.root.destroy()
             try:
-                subprocess.run(self.pyTopManager.executable_list[index])
+                subprocess.Popen(self.pyTopManager.executable_list[index])
             except Exception as e:
                 messagebox.showerror("Execution problem", f"There has been a problem runing the executable file \n {e}")
 
@@ -420,15 +409,6 @@ class ExecutableWindow:
                                         font=('', 15), 
                                         command=lambda: self.submit_program(index, self.topwindow_input.get()))
         self.topwindow_submit.pack()
-
-
-    def on_key_press(self, event):
-        """Listens for a number and runs a command corresponding to it"""
-        key = event.keysym
-        for index in range(10):
-            if key != str(index):
-                continue
-            self.run_program(self.pyTopManager.executable_list[index], index)
 
 
 class SettingsWindow:
