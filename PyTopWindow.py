@@ -3,7 +3,7 @@ import tkinter as tk
 import webbrowser
 import subprocess
 import threading
-import time
+import json
 import os
 
 
@@ -136,7 +136,7 @@ class WebsiteWindow(Window):
                          pyTopManager.webpage_list)
 
         # Creates the buttons that will open websites
-        for index, element in enumerate(self.pyTopManager.webpage_list):
+        for index, element in enumerate(self.pyTopManager.webpage_list.values()):
 
             # Shortens the text if it is too long
             if element == "":
@@ -211,10 +211,9 @@ class WebsiteWindow(Window):
 
     def submit_webpage(self, index, url):
         """Reads the URL in the self.topwindow_input and edits the file where webpages are stored"""
-        self.pyTopManager.webpage_list[index] = url
+        self.pyTopManager.webpage_list[f"{index}"] = url
         with open(self.pyTopManager.webpage_list_file, 'w') as file:
-            for line in self.pyTopManager.webpage_list:
-                file.write(line + "\n")
+            json.dump(self.pyTopManager.webpage_list, file, indent=4)
         self.root.destroy()
 
 
@@ -229,7 +228,7 @@ class CommandWindow(Window):
                          pyTopManager.command_list)
 
         # Creates the buttons to quickly run commands
-        for index, element in enumerate(self.pyTopManager.command_list):
+        for index, element in enumerate(self.pyTopManager.command_list.values()):
             
             # Shortens the text if too long
             if element == "":
@@ -239,7 +238,7 @@ class CommandWindow(Window):
             else: 
                 label = element
 
-            frame = tk.Frame(self.root, bg='black')
+            frame = tk.Frame(self.root)
             
             # Create a button with label running a command
             tk.Button(
@@ -269,10 +268,9 @@ class CommandWindow(Window):
 
     def submit_command(self, index, command):
         """Changes a command to a new one"""
-        self.pyTopManager.command_list[index] = command
+        self.pyTopManager.command_list[f"{index}"] = command
         with open(self.pyTopManager.command_list_file, 'w') as file:
-            for line in self.pyTopManager.command_list:
-                file.write(line + "\n")
+            json.dump(self.pyTopManager.command_list, file, indent=4)
         self.root.destroy()
 
 
@@ -324,7 +322,7 @@ class ExecutableWindow(Window):
                          pyTopManager.webpage_list)
 
         # Creates the buttons to quickly run commands
-        for index, element in enumerate(self.pyTopManager.executable_list):
+        for index, element in enumerate(self.pyTopManager.executable_list.values()):
             
             # Shortens the text if too long
             if element == "":
@@ -364,10 +362,9 @@ class ExecutableWindow(Window):
 
     def submit_program(self, index, command):
         """Changes a command to a new one"""
-        self.pyTopManager.executable_list[index] = command
+        self.pyTopManager.executable_list[f"{index}"] = command
         with open(self.pyTopManager.executable_list_file, 'w') as file:
-            for line in self.pyTopManager.executable_list:
-                file.write(line + "\n")
+            json.dump(self.pyTopManager.executable_list, file, indent=4)
         self.root.destroy()
 
 
@@ -446,10 +443,7 @@ class SettingsWindow:
         def update_file(self):
             """Updates the file storing the keybinds"""
             with open(self.pyTopManager.keybind_file, 'w') as f:
-                f.write(str(" ".join(self.pyTopManager.clipboard_window_keybinds)) + '\n')
-                f.write(str(" ".join(self.pyTopManager.webpage_window_keybinds)) + '\n')
-                f.write(str(" ".join(self.pyTopManager.command_window_keybinds)) + '\n')
-                f.write(str(" ".join(self.pyTopManager.executable_window_keybinds)) + '\n')
+                json.dump({key : value for key, value in zip(range(10), self.pyTopManager.keybind_lists)}, f, indent=4)
 
 
         def on_key_press(self, event):
@@ -475,16 +469,9 @@ class SettingsWindow:
             self.keybind_list[self.keybind_index] = key.upper()
 
             # Updates the Label that shows the selected keybinds by the user of the ChangeKeybinds window
-            match self.keybind_index:
-                case 0:
-                    self.keybind_text[0] = key
-                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
-                case 1:
-                    self.keybind_text[1] = key
-                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
-                case 2:
-                    self.keybind_text[2] = key
-                    self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
+            for index in range(3):
+                self.keybind_text[index] = key
+                self.keybind_label.config(text=f"{self.keybind_text[0]} + {self.keybind_text[1]} + {self.keybind_text[2]}")
 
             # If the user already inputed 3 keys closes the window and updates the keybind label of the selected window
             if self.keybind_index == 2:

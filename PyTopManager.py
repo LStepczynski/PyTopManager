@@ -3,6 +3,7 @@ import pyperclip
 import keyboard
 import ctypes
 import time
+import json
 
 class PyTopManager:
     """Class that will manage different functions of the desktop"""
@@ -12,15 +13,15 @@ class PyTopManager:
         self.current_clipboard = 0                    # Current Clipboard index
 
         # Contains saved webpages
-        self.webpage_list_file = "webpages.txt"
+        self.webpage_list_file = "webpages.json"
         self.webpage_list = self.load_file(self.webpage_list_file)
         
         # Contains saved commands
-        self.command_list_file = "commands.txt"
+        self.command_list_file = "commands.json"
         self.command_list = self.load_file(self.command_list_file)
 
         # Contains saved programs
-        self.executable_list_file = "executables.txt"
+        self.executable_list_file = "executables.json"
         self.executable_list = self.load_file(self.executable_list_file)
 
         self.clipboard_window_keybinds = ["CTRL", "SHIFT", "A"]
@@ -38,21 +39,23 @@ class PyTopManager:
         self.screen_height = ctypes.windll.user32.GetSystemMetrics(1)
 
         # Keybinds for each window
-        self.keybind_file = "keybinds.txt"
+        self.keybind_file = "keybinds.json"
         try:
             with open(self.keybind_file, 'r') as f:
-                lines = f.read().splitlines()  # Read lines and strip newline characters
+                dictionary = json.load(f)
 
-                if len(lines) != 4:
-                    raise Exception
-                for line in lines:
-                    if len(line.split()) != 3:
-                        raise Exception
-                    
-                for index, keybind_list in enumerate(self.keybind_lists):
-                    keybind_list = lines[index].split()
+                if len(dictionary) != 4:
+                    return
+                
+                for value in dictionary.values():
+                    if type(value) != list or len(value) != 3:
+                        return
+                
 
-        except Exception:
+                for i, value in zip(range(len(self.keybind_lists)), dictionary.values()):
+                    for j in range(len(self.keybind_lists[i])):
+                        self.keybind_lists[i][j] = value[j]
+        except FileNotFoundError:
             pass
 
 
@@ -107,20 +110,18 @@ class PyTopManager:
 
     def load_file(self, file_name):
         """Reads the contents of the file and returns a minimum of 10 elements"""
-        text_list = []
-        
+        dictionary = {}
         try:
             with open(file_name, 'r') as file:
-                for line in file:
-                    text_list.append(line.strip())
-        except FileNotFoundError:
-            return ["" for _ in range(10)]
+                dictionary = json.load(file)
+        except Exception:
+            return {f"{key}" : "" for key in range(10)}
 
         # Fill the list with empty strings up to a maximum of 10 elements
-        while len(text_list) < 10:
-            text_list.append("")
+        if len(dictionary) != 10:
+            return {f"{key}" : "" for key in range(10)}
 
-        return text_list
+        return dictionary
 
 
     def activate(self):
