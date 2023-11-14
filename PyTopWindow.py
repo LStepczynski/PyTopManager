@@ -36,7 +36,7 @@ class Window:
             if not self.argslist:
                 self.on_press_func(index)
             else:
-                self.on_press_func(self.argslist[index], index)
+                self.on_press_func(self.argslist[f"{index}"]["value"], index)
 
 
 class ManagerWindow:
