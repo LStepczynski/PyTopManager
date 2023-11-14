@@ -136,7 +136,7 @@ class WebsiteWindow(Window):
                          pyTopManager.webpage_list)
 
         # Creates the buttons that will open websites
-        for index, element in enumerate(self.pyTopManager.webpage_list.values()):
+        for index, element in enumerate([value["label"] for value in self.pyTopManager.webpage_list.values()]):
 
             # Shortens the text if it is too long
             if element == "":
@@ -164,7 +164,7 @@ class WebsiteWindow(Window):
                 text="X", 
                 height=1,
                 font=('', 15), 
-                command=lambda i=index: self.submit_webpage(i, "")
+                command=lambda i=index: self.submit_webpage(i, "", "")
             ).grid(row=index, column=1) 
             
             frame.pack(fill='x')
@@ -183,7 +183,7 @@ class WebsiteWindow(Window):
         
         # Opens a website and destroys the window
         else:
-            webbrowser.open(self.pyTopManager.webpage_list[index])
+            webbrowser.open(self.pyTopManager.webpage_list[f"{index}"]["value"])
             self.root.destroy()
 
 
@@ -191,27 +191,31 @@ class WebsiteWindow(Window):
         """Window to ask the user for an url"""
         self.topwindow = tk.Toplevel(self.root)
         self.topwindow.title("Add Webpage")
-        self.topwindow.geometry("350x150")
+        self.topwindow.geometry("350x220")
         self.topwindow.attributes("-topmost", True)
         self.topwindow.attributes("-toolwindow", True)
 
         # Main label of the add webpage window
-        self.topwindow_label = tk.Label(self.topwindow, text="Enter an Url", font=('',20))
+        self.topwindow_label = tk.Label(self.topwindow, text="Enter a Label and an Url", font=('',20))
         self.topwindow_label.pack()
 
         # URL entry of the add webpage window
-        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
-        self.topwindow_input.pack(pady=20)
+        self.topwindow_label_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_label_input.pack(pady=20)
+
+        self.topwindow_url_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_url_input.pack(pady=20)
+
         self.topwindow_submit = tk.Button(self.topwindow, 
                                           text="Submit", 
                                           font=('', 15), 
-                                          command=lambda: self.submit_webpage(index, self.topwindow_input.get()))
+                                          command=lambda: self.submit_webpage(index, self.topwindow_label_input.get(), self.topwindow_url_input.get()))
         self.topwindow_submit.pack()
 
 
-    def submit_webpage(self, index, url):
+    def submit_webpage(self, index, label, url):
         """Reads the URL in the self.topwindow_input and edits the file where webpages are stored"""
-        self.pyTopManager.webpage_list[f"{index}"] = url
+        self.pyTopManager.webpage_list[f"{index}"] = {"value":url, "label":label}
         with open(self.pyTopManager.webpage_list_file, 'w') as file:
             json.dump(self.pyTopManager.webpage_list, file, indent=4)
         self.root.destroy()
@@ -228,7 +232,7 @@ class CommandWindow(Window):
                          pyTopManager.command_list)
 
         # Creates the buttons to quickly run commands
-        for index, element in enumerate(self.pyTopManager.command_list.values()):
+        for index, element in enumerate([value["label"] for value in self.pyTopManager.command_list.values()]):
             
             # Shortens the text if too long
             if element == "":
@@ -256,7 +260,7 @@ class CommandWindow(Window):
                 text="X", 
                 height=1,
                 font=('', 15), 
-                command=lambda i=index: self.submit_command(i, "")
+                command=lambda i=index: self.submit_command(i, "", "")
             ).grid(row=index, column=1) 
             
             frame.pack(fill='x')
@@ -266,9 +270,9 @@ class CommandWindow(Window):
         self.root.mainloop()
 
 
-    def submit_command(self, index, command):
+    def submit_command(self, index, label, command):
         """Changes a command to a new one"""
-        self.pyTopManager.command_list[f"{index}"] = command
+        self.pyTopManager.command_list[f"{index}"] = {"value":command, "label":label}
         with open(self.pyTopManager.command_list_file, 'w') as file:
             json.dump(self.pyTopManager.command_list, file, indent=4)
         self.root.destroy()
@@ -283,7 +287,7 @@ class CommandWindow(Window):
 
         # Runs the command linked to the button
         else:
-            threading.Thread(target=os.system, args=(self.pyTopManager.command_list[index],)).start()
+            threading.Thread(target=os.system, args=(self.pyTopManager.command_list[f"{index}"]["value"],)).start()
             self.root.destroy()
 
 
@@ -291,23 +295,26 @@ class CommandWindow(Window):
         """Opens the add_command window"""
         self.topwindow = tk.Toplevel(self.root)
         self.topwindow.title("Add Command")
-        self.topwindow.geometry("350x150")
+        self.topwindow.geometry("350x220")
         self.topwindow.attributes("-topmost", True)
         self.topwindow.attributes("-toolwindow", True)
 
         # Main label of the add_command window
-        self.topwindow_label = tk.Label(self.topwindow, text="Enter a command", font=('',20))
+        self.topwindow_label = tk.Label(self.topwindow, text="Enter a label and a command", font=('',20))
         self.topwindow_label.pack()
 
         # Command entry of the add_command window
-        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
-        self.topwindow_input.pack(pady=20)
+        self.topwindow_label_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_label_input.pack(pady=20)
+
+        self.topwindow_command_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_command_input.pack(pady=20)
 
         # Submit button of the add_command window
         self.topwindow_submit = tk.Button(self.topwindow, 
                                         text="Submit", 
                                         font=('', 15), 
-                                        command=lambda: self.submit_command(index, self.topwindow_input.get()))
+                                        command=lambda: self.submit_command(index, self.topwindow_label_input.get(), self.topwindow_command_input.get()))
         self.topwindow_submit.pack()
 
 
@@ -322,7 +329,7 @@ class ExecutableWindow(Window):
                          pyTopManager.webpage_list)
 
         # Creates the buttons to quickly run commands
-        for index, element in enumerate(self.pyTopManager.executable_list.values()):
+        for index, element in enumerate([value["label"] for value in self.pyTopManager.executable_list.values()]):
             
             # Shortens the text if too long
             if element == "":
@@ -332,7 +339,7 @@ class ExecutableWindow(Window):
             else: 
                 label = element
 
-            frame = tk.Frame(self.root, bg='black')
+            frame = tk.Frame(self.root)
             
             # Create a button with label running a command
             tk.Button(
@@ -350,7 +357,7 @@ class ExecutableWindow(Window):
                 text="X", 
                 height=1,
                 font=('', 15), 
-                command=lambda i=index: self.submit_program(i, "")
+                command=lambda i=index: self.submit_program(i, "", "")
             ).grid(row=index, column=1) 
             
             frame.pack(fill='x')
@@ -360,9 +367,9 @@ class ExecutableWindow(Window):
         self.root.mainloop()
 
 
-    def submit_program(self, index, command):
+    def submit_program(self, index, label, command):
         """Changes a command to a new one"""
-        self.pyTopManager.executable_list[f"{index}"] = command
+        self.pyTopManager.executable_list[f"{index}"] = {"value":command, "label":label}
         with open(self.pyTopManager.executable_list_file, 'w') as file:
             json.dump(self.pyTopManager.executable_list, file, indent=4)
         self.root.destroy()
@@ -379,7 +386,7 @@ class ExecutableWindow(Window):
         else:
             self.root.destroy()
             try:
-                subprocess.Popen(self.pyTopManager.executable_list[index])
+                subprocess.Popen(self.pyTopManager.executable_list[f"{index}"]["value"])
             except Exception as e:
                 messagebox.showerror("Execution problem", f"There has been a problem runing the executable file \n {e}")
 
@@ -388,7 +395,7 @@ class ExecutableWindow(Window):
         """Opens the add_command window"""
         self.topwindow = tk.Toplevel(self.root)
         self.topwindow.title("Add File")
-        self.topwindow.geometry("350x150")
+        self.topwindow.geometry("350x220")
         self.topwindow.attributes("-topmost", True)
         self.topwindow.attributes("-toolwindow", True)
 
@@ -397,14 +404,17 @@ class ExecutableWindow(Window):
         self.topwindow_label.pack()
 
         # Command entry of the add_command window
-        self.topwindow_input = tk.Entry(self.topwindow, font=('',15))
-        self.topwindow_input.pack(pady=20)
+        self.topwindow_label_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_label_input.pack(pady=20)
+
+        self.topwindow_executable_input = tk.Entry(self.topwindow, font=('',15))
+        self.topwindow_executable_input.pack(pady=20)
 
         # Submit button of the add_command window
         self.topwindow_submit = tk.Button(self.topwindow, 
                                         text="Submit", 
                                         font=('', 15), 
-                                        command=lambda: self.submit_program(index, self.topwindow_input.get()))
+                                        command=lambda: self.submit_program(index, self.topwindow_label_input.get(), self.topwindow_executable_input.get()))
         self.topwindow_submit.pack()
 
 

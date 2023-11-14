@@ -115,11 +115,11 @@ class PyTopManager:
             with open(file_name, 'r') as file:
                 dictionary = json.load(file)
         except Exception:
-            return {f"{key}" : "" for key in range(10)}
+            return {f"{key}" : {"value":"", "label":""} for key in range(10)}
 
         # Fill the list with empty strings up to a maximum of 10 elements
         if len(dictionary) != 10:
-            return {f"{key}" : "" for key in range(10)}
+            return {f"{key}" : {"value":"", "label":""} for key in range(10)}
 
         return dictionary
 
